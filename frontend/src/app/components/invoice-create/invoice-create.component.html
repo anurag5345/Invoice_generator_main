@@ -1,0 +1,117 @@
+<div class="card" style="max-width: 980px; margin: 12px auto">
+  <h2>{{ mode === "create" ? "Create Invoice" : "Edit Invoice" }}</h2>
+  <form (ngSubmit)="submit()">
+    <div style="display: flex; gap: 12px">
+      <mat-form-field style="flex: 1"
+        ><mat-label>Invoice #</mat-label
+        ><input
+          matInput
+          [(ngModel)]="form.value.invoiceNumber"
+          name="invoiceNumber" /></mat-form-field
+      ><mat-form-field style="width: 160px"
+        ><mat-label>Date</mat-label
+        ><input
+          matInput
+          [matDatepicker]="d1"
+          [(ngModel)]="form.value.date"
+          name="date" /><mat-datepicker-toggle
+          matSuffix
+          [for]="d1"
+        ></mat-datepicker-toggle
+        ><mat-datepicker #d1></mat-datepicker
+      ></mat-form-field>
+    </div>
+    <div style="display: flex; gap: 12px; margin-top: 12px">
+      <mat-form-field style="flex: 1"
+        ><mat-label>Customer</mat-label
+        ><input
+          matInput
+          [(ngModel)]="form.value.customerName"
+          name="customerName" /></mat-form-field
+      ><mat-form-field style="flex: 1"
+        ><mat-label>Address</mat-label
+        ><input
+          matInput
+          [(ngModel)]="form.value.customerAddress"
+          name="customerAddress"
+      /></mat-form-field>
+    </div>
+    <h3 style="margin-top: 12px">Items</h3>
+    <table class="table-items">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Unit</th>
+          <th>GST %</th>
+          <th>Amount</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let it of items().controls; let i = index">
+          <td>
+            <input
+              matInput
+              [(ngModel)]="it.value.description"
+              name="desc{{ i }}"
+            />
+          </td>
+          <td>
+            <input
+              matInput
+              type="number"
+              [(ngModel)]="it.value.quantity"
+              name="qty{{ i }}"
+            />
+          </td>
+          <td>
+            <input
+              matInput
+              type="number"
+              [(ngModel)]="it.value.unitPrice"
+              name="unit{{ i }}"
+            />
+          </td>
+          <td>
+            <input
+              matInput
+              type="number"
+              [(ngModel)]="it.value.gstRate"
+              name="gst{{ i }}"
+            />
+          </td>
+          <td>
+            {{ it.value.quantity * it.value.unitPrice | number : "1.2-2" }}
+          </td>
+          <td>
+            <button mat-icon-button color="warn" (click)="removeItem(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top: 8px">
+      <button mat-stroked-button type="button" (click)="addItem()">
+        + Add item
+      </button>
+    </div>
+    <div
+      style="
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 12px;
+      "
+    >
+      <div>Subtotal: {{ totals.subtotal | number : "1.2-2" }}</div>
+      <div>GST: {{ totals.gst | number : "1.2-2" }}</div>
+      <div>Total: {{ totals.total | number : "1.2-2" }}</div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; margin-top: 12px">
+      <button mat-raised-button color="primary" type="submit">Save</button
+      ><a mat-button routerLink="/invoices" style="margin-left: 8px">Cancel</a>
+    </div>
+  </form>
+</div>

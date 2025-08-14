@@ -1,0 +1,32 @@
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+body {
+    margin: 0;
+    font-family: Roboto, Arial, sans-serif;
+    background: #f5f7fb;
+}
+
+.app-container {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 12px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    margin-bottom: 16px;
+}
+
+.table-items {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-items th,
+.table-items td {
+    border: 1px solid #e6eef8;
+    padding: 8px;
+}

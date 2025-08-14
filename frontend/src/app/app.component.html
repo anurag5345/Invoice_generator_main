@@ -1,0 +1,12 @@
+<header class="transparent-header">
+  <nav>
+    <a routerLink="/">Home</a>
+    <a routerLink="/invoices" *ngIf="isLoggedIn()">Invoices</a>
+    <a routerLink="/login" *ngIf="!isLoggedIn()">Login</a>
+    <a routerLink="/register" *ngIf="!isLoggedIn()">Register</a>
+    <a (click)="logout()" *ngIf="isLoggedIn()">Logout</a>
+  </nav>
+</header>
+<main style="margin-top:64px;">
+  <router-outlet></router-outlet>
+</main>

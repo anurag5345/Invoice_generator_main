@@ -1,0 +1,10 @@
+<div class="card" *ngIf="invoice" style="max-width:980px;margin:12px auto;">
+  <h2>Invoice #{{invoice.invoiceNumber}}</h2>
+  <div>Customer: {{invoice.customerName}}</div>
+  <div>Date: {{invoice.date | date}}</div>
+  <div>Due: {{invoice.dueDate | date}}</div>
+  <h3 style="margin-top:12px;">Items</h3>
+  <table class="table-items"><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>GST %</th><th>Amount</th></tr></thead><tbody><tr *ngFor="let it of invoice.items"><td>{{it.description}}</td><td>{{it.quantity}}</td><td>{{it.unitPrice | number:'1.2-2'}}</td><td>{{it.gstRate || 0}}</td><td>{{ (it.quantity * it.unitPrice) | number:'1.2-2' }}</td></tr></tbody></table>
+  <div style="display:flex;justify-content:flex-end;gap:24px;margin-top:12px;font-weight:600;"><div>Subtotal: {{invoice.totalWithoutGST || 0 | number:'1.2-2'}}</div><div>GST: {{invoice.totalGST || 0 | number:'1.2-2'}}</div><div>Total: {{invoice.totalWithGST || 0 | number:'1.2-2'}}</div></div>
+  <div style="margin-top:12px;"><a mat-button routerLink="/invoices">Back</a><a mat-button [routerLink] = "['/invoices',invoice.id,'edit']">Edit</a></div>
+</div>
