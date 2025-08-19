@@ -1,117 +1,207 @@
-<div class="card" style="max-width: 980px; margin: 12px auto">
-  <h2>{{ mode === "create" ? "Create Invoice" : "Edit Invoice" }}</h2>
-  <form (ngSubmit)="submit()">
-    <div style="display: flex; gap: 12px">
-      <mat-form-field style="flex: 1"
-        ><mat-label>Invoice #</mat-label
-        ><input
-          matInput
-          [(ngModel)]="form.value.invoiceNumber"
-          name="invoiceNumber" /></mat-form-field
-      ><mat-form-field style="width: 160px"
-        ><mat-label>Date</mat-label
-        ><input
-          matInput
-          [matDatepicker]="d1"
-          [(ngModel)]="form.value.date"
-          name="date" /><mat-datepicker-toggle
-          matSuffix
-          [for]="d1"
-        ></mat-datepicker-toggle
-        ><mat-datepicker #d1></mat-datepicker
-      ></mat-form-field>
-    </div>
-    <div style="display: flex; gap: 12px; margin-top: 12px">
-      <mat-form-field style="flex: 1"
-        ><mat-label>Customer</mat-label
-        ><input
-          matInput
-          [(ngModel)]="form.value.customerName"
-          name="customerName" /></mat-form-field
-      ><mat-form-field style="flex: 1"
-        ><mat-label>Address</mat-label
-        ><input
-          matInput
-          [(ngModel)]="form.value.customerAddress"
-          name="customerAddress"
-      /></mat-form-field>
-    </div>
-    <h3 style="margin-top: 12px">Items</h3>
-    <table class="table-items">
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>Qty</th>
-          <th>Unit</th>
-          <th>GST %</th>
-          <th>Amount</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let it of items().controls; let i = index">
-          <td>
-            <input
-              matInput
-              [(ngModel)]="it.value.description"
-              name="desc{{ i }}"
-            />
-          </td>
-          <td>
-            <input
-              matInput
-              type="number"
-              [(ngModel)]="it.value.quantity"
-              name="qty{{ i }}"
-            />
-          </td>
-          <td>
-            <input
-              matInput
-              type="number"
-              [(ngModel)]="it.value.unitPrice"
-              name="unit{{ i }}"
-            />
-          </td>
-          <td>
-            <input
-              matInput
-              type="number"
-              [(ngModel)]="it.value.gstRate"
-              name="gst{{ i }}"
-            />
-          </td>
-          <td>
-            {{ it.value.quantity * it.value.unitPrice | number : "1.2-2" }}
-          </td>
-          <td>
-            <button mat-icon-button color="warn" (click)="removeItem(i)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div style="margin-top: 8px">
-      <button mat-stroked-button type="button" (click)="addItem()">
-        + Add item
+<div class="wrapper">
+  <div class="title-row">
+    <h1>{{ mode === "create" ? "Create Invoice" : "Edit Invoice" }}</h1>
+    <div class="top-actions">
+      <button
+        class="btn small"
+        (click)="downloadPreview()"
+        [disabled]="form.invalid"
+      >
+        Download PDF
       </button>
     </div>
-    <div
-      style="
-        display: flex;
-        justify-content: flex-end;
-        gap: 16px;
-        margin-top: 12px;
-      "
-    >
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="row">
+      <mat-form-field appearance="fill" class="field">
+        <mat-label>Invoice #</mat-label>
+        <input matInput formControlName="invoiceNumber" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="field small">
+        <mat-label>Issue Date</mat-label>
+        <input matInput [matDatepicker]="d1" formControlName="issueDate" />
+        <mat-datepicker-toggle matSuffix [for]="d1"></mat-datepicker-toggle>
+        <mat-datepicker #d1></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="field small">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phoneNumber" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="field small">
+        <mat-label>Due Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="d2"
+          formControlName="dueDate"
+          [matDatepickerFilter]="onlyToday"
+        />
+        <mat-datepicker-toggle matSuffix [for]="d2"></mat-datepicker-toggle>
+        <mat-datepicker #d2></mat-datepicker>
+        <mat-error *ngIf="form.get('dueDate')?.hasError('dueDateBeforeToday')">
+          Due date must be today or a future date.
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="row">
+      <mat-form-field appearance="fill" class="field">
+        <mat-label>Customer</mat-label>
+        <input matInput formControlName="customerName" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="field">
+        <mat-label>Address</mat-label>
+        <input matInput formControlName="customerAddress" />
+      </mat-form-field>
+    </div>
+
+    <h2 class="section-title">Items</h2>
+    <div formArrayName="items" class="table-container">
+      <table class="table-items">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Rate</th>
+            <th>Unit</th>
+            <th>GST %</th>
+            <th>Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let it of items().controls; let i = index"
+            [formGroupName]="i"
+          >
+            <td>
+              <input matInput formControlName="description" id="desc-{{ i }}" />
+            </td>
+            <td class="num-cell">
+              <div class="num-controls">
+                <button
+                  type="button"
+                  class="num-btn minus"
+                  (click)="increment(i, 'rate', -1)"
+                >
+                  -
+                </button>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="rate"
+                  id="rate-{{ i }}"
+                  step="1"
+                  min="0"
+                  pattern="\d*"
+                />
+                <button
+                  type="button"
+                  class="num-btn plus"
+                  (click)="increment(i, 'rate', 1)"
+                >
+                  +
+                </button>
+              </div>
+            </td>
+            <td class="num-cell">
+              <div class="num-controls">
+                <button
+                  type="button"
+                  class="num-btn minus"
+                  (click)="increment(i, 'unitPrice', -1)"
+                >
+                  -
+                </button>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="unitPrice"
+                  id="unit-{{ i }}"
+                  step="1"
+                  min="0"
+                  pattern="\d*"
+                />
+                <button
+                  type="button"
+                  class="num-btn plus"
+                  (click)="increment(i, 'unitPrice', 1)"
+                >
+                  +
+                </button>
+              </div>
+            </td>
+            <td class="num-cell">
+              <div class="num-controls">
+                <button
+                  type="button"
+                  class="num-btn minus"
+                  (click)="increment(i, 'gstRate', -1)"
+                >
+                  -
+                </button>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="gstRate"
+                  id="gst-{{ i }}"
+                  step="0.5"
+                  min="0"
+                />
+                <button
+                  type="button"
+                  class="num-btn plus"
+                  (click)="increment(i, 'gstRate', 1)"
+                >
+                  +
+                </button>
+              </div>
+            </td>
+            <td>
+              {{
+                items().at(i).value.rate * items().at(i).value.unitPrice
+                  | number : "1.2-2"
+              }}
+            </td>
+            <td>
+              <button
+                mat-icon-button
+                class="item-edit"
+                (click)="focusField(i, 'desc')"
+              >
+                <mat-icon>Edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                class="item-delete"
+                (click)="removeItem(i)"
+              >
+                <mat-icon>Delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="add-btn">
+      <button class="btn small" type="button" (click)="addItem()">
+        + Add Item
+      </button>
+    </div>
+
+    <div class="totals">
       <div>Subtotal: {{ totals.subtotal | number : "1.2-2" }}</div>
       <div>GST: {{ totals.gst | number : "1.2-2" }}</div>
       <div>Total: {{ totals.total | number : "1.2-2" }}</div>
     </div>
-    <div style="display: flex; justify-content: flex-end; margin-top: 12px">
-      <button mat-raised-button color="primary" type="submit">Save</button
-      ><a mat-button routerLink="/invoices" style="margin-left: 8px">Cancel</a>
+
+    <div class="actions">
+      <button class="btn" type="submit">Save</button>
+      <a class="btn danger" routerLink="/invoices">Cancel</a>
     </div>
   </form>
 </div>

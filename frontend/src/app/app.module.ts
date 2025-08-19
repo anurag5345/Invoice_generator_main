@@ -14,6 +14,8 @@ import { RegisterComponent } from './components/register/register.component';
 import { InvoiceListComponent } from './components/invoice-list/invoice-list.component';
 import { InvoiceCreateComponent } from './components/invoice-create/invoice-create.component';
 import { InvoiceViewComponent } from './components/invoice-view/invoice-view.component';
+import { BigSnackComponent } from './ui/big-snack/big-snack.component';
+import { ConfirmSnackComponent } from './ui/confirm-snack/confirm-snack.component';
 
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,6 +36,8 @@ import { HomeComponent } from './components/home/home.component';
     InvoiceListComponent,
     InvoiceCreateComponent,
     InvoiceViewComponent,
+    BigSnackComponent,
+    ConfirmSnackComponent,
   ],
   imports: [
     BrowserModule,
@@ -43,9 +47,8 @@ import { HomeComponent } from './components/home/home.component';
     ReactiveFormsModule,
     RouterModule.forRoot(routes),
     MaterialModule,
-
     MatFormFieldModule,
-    MatSelectModule, 
+    MatSelectModule,
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
