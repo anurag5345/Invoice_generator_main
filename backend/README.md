@@ -153,3 +153,184 @@ Contributing
 Contact
 -------
 If you need help running the backend, paste console output/errors and I'll assist.
+//
+
+
+
+
+
+MySQL schema & example queries
+------------------------------
+Below are practical CREATE TABLE statements and common queries you can include in the README for reference or to run manually in your MySQL server. Adapt names/types to match Sequelize models if you change them.
+
+Create tables
+```sql
+CREATE TABLE users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
+  role VARCHAR(50) DEFAULT 'user',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE invoices (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  invoice_number VARCHAR(64) NOT NULL UNIQUE,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_email VARCHAR(255),
+  issue_date DATE NOT NULL,
+  due_date DATE,
+  status ENUM('draft','sent','paid','cancelled') DEFAULT 'draft',
+  paid TINYINT(1) DEFAULT 0,
+  subtotal DECIMAL(12,2) DEFAULT 0.00,
+  tax_total DECIMAL(12,2) DEFAULT 0.00,
+  total_with_gst DECIMAL(12,2) DEFAULT 0.00,
+  currency VARCHAR(8) DEFAULT 'INR',
+  notes TEXT,
+  created_by BIGINT UNSIGNED,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_invoices_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE line_items (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  invoice_id BIGINT UNSIGNED NOT NULL,
+  description TEXT,
+  quantity DECIMAL(12,2) DEFAULT 1,
+  unit_price DECIMAL(12,2) DEFAULT 0.00,
+  tax_rate DECIMAL(5,2) DEFAULT 0.00,
+  line_total DECIMAL(12,2) DEFAULT 0.00,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lineitems_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_invoices_issue_date ON invoices(issue_date);
+CREATE INDEX idx_invoices_status ON invoices(status);
+CREATE INDEX idx_invoices_customer ON invoices(customer_name(100));
+```
+
+Schema (table form)
+-------------------
+Below is the same schema represented in markdown table form for quick reference.
+
+### users
+| Column | Type | Null | Default | Description |
+|---|---|---:|---|---|
+| id | BIGINT UNSIGNED AUTO_INCREMENT | NO |  | Primary key |
+| email | VARCHAR(255) | NO |  | Unique user email |
+| password_hash | VARCHAR(255) | NO |  | Hashed password |
+| name | VARCHAR(255) | YES | NULL | Display name |
+| role | VARCHAR(50) | NO | 'user' | User role |
+| created_at | DATETIME | NO | CURRENT_TIMESTAMP | Record created timestamp |
+| updated_at | DATETIME | NO | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Record updated timestamp |
+
+### invoices
+| Column | Type | Null | Default | Description |
+|---|---|---:|---|---|
+| id | BIGINT UNSIGNED AUTO_INCREMENT | NO |  | Primary key |
+| invoice_number | VARCHAR(64) | NO |  | Unique invoice identifier |
+| customer_name | VARCHAR(255) | NO |  | Customer display name |
+| customer_email | VARCHAR(255) | YES | NULL | Customer email |
+| issue_date | DATE | NO |  | Invoice issue date |
+| due_date | DATE | YES | NULL | Invoice due date |
+| status | ENUM('draft','sent','paid','cancelled') | NO | 'draft' | Invoice status |
+| paid | TINYINT(1) | NO | 0 | Paid flag (0/1) |
+| subtotal | DECIMAL(12,2) | NO | 0.00 | Pre-tax total |
+| tax_total | DECIMAL(12,2) | NO | 0.00 | Total tax amount |
+| total_with_gst | DECIMAL(12,2) | NO | 0.00 | Grand total including tax |
+| currency | VARCHAR(8) | NO | 'INR' | Currency code |
+| notes | TEXT | YES | NULL | Optional notes |
+| created_by | BIGINT UNSIGNED | YES | NULL | FK -> users.id (creator) |
+| created_at | DATETIME | NO | CURRENT_TIMESTAMP | Record created timestamp |
+| updated_at | DATETIME | NO | CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Record updated timestamp |
+
+### line_items
+| Column | Type | Null | Default | Description |
+|---|---|---:|---|---|
+| id | BIGINT UNSIGNED AUTO_INCREMENT | NO |  | Primary key |
+| invoice_id | BIGINT UNSIGNED | NO |  | FK -> invoices.id |
+| description | TEXT | YES | NULL | Item description |
+| quantity | DECIMAL(12,2) | NO | 1 | Quantity |
+| unit_price | DECIMAL(12,2) | NO | 0.00 | Unit price |
+| tax_rate | DECIMAL(5,2) | NO | 0.00 | Tax rate (%) |
+| line_total | DECIMAL(12,2) | NO | 0.00 | Line total (quantity * unit_price + tax) |
+| created_at | DATETIME | NO | CURRENT_TIMESTAMP | Record created timestamp |
+
+
+Insert invoice + line items (transaction)
+```sql
+START TRANSACTION;
+
+INSERT INTO invoices
+  (invoice_number, customer_name, customer_email, issue_date, due_date, status, paid, subtotal, tax_total, total_with_gst, currency, notes, created_by)
+VALUES
+  ('INV-2025-0001','Acme Corp','billing@acme.com','2025-08-20','2025-09-20','sent',0,1000.00,180.00,1180.00,'INR','Notes', 1);
+
+SET @invoice_id = LAST_INSERT_ID();
+
+INSERT INTO line_items (invoice_id, description, quantity, unit_price, tax_rate, line_total)
+VALUES
+  (@invoice_id, 'Design work', 1, 1000.00, 18.00, 1180.00);
+
+COMMIT;
+```
+
+Home page queries
+```sql
+-- total invoices
+SELECT COUNT(*) AS total_invoices FROM invoices;
+
+-- total due: sum of total_with_gst for unpaid invoices
+SELECT COALESCE(SUM(total_with_gst),0.00) AS total_due
+FROM invoices
+WHERE (status IS NULL OR status != 'paid') AND (paid = 0 OR paid IS NULL);
+
+-- distinct customer count
+SELECT COUNT(DISTINCT customer_name) AS customer_count FROM invoices;
+
+-- 2 most recent invoices
+SELECT id, invoice_number, customer_name, total_with_gst, issue_date, status, paid
+FROM invoices
+ORDER BY issue_date DESC, id DESC
+LIMIT 2;
+```
+
+Format amount to 2 decimals in SQL
+```sql
+SELECT FORMAT(total_with_gst,2) AS amount_formatted FROM invoices WHERE id = 123;
+```
+
+Safe one-way status update (unpaid -> paid only)
+```sql
+UPDATE invoices
+SET paid = 1,
+    status = 'paid',
+    updated_at = NOW()
+WHERE id = ? AND (paid = 0 OR paid IS NULL OR status != 'paid');
+```
+
+Trigger to prevent paid -> unpaid changes (DB-level enforcement)
+```sql
+DELIMITER $$
+CREATE TRIGGER trg_invoices_prevent_unpay
+BEFORE UPDATE ON invoices
+FOR EACH ROW
+BEGIN
+  IF OLD.paid = 1 AND NEW.paid = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot revert paid invoice to unpaid';
+  END IF;
+  IF OLD.status = 'paid' AND NEW.status <> 'paid' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot change status of a paid invoice';
+  END IF;
+END$$
+DELIMITER ;
+```
+
+Notes
+- Use DECIMAL for money fields (not FLOAT).
+- Enforce rules in both application and DB (frontend guard + backend service + DB trigger) to prevent paid->unpaid.
+- Use transactions when creating/updating invoice + line items.
+

@@ -9,15 +9,16 @@ import { AppComponent } from './app.component';
 import { routes } from './app.routes';
 import { MaterialModule } from './material.module';
 
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { InvoiceListComponent } from './components/invoice-list/invoice-list.component';
-import { InvoiceCreateComponent } from './components/invoice-create/invoice-create.component';
-import { InvoiceViewComponent } from './components/invoice-view/invoice-view.component';
-import { BigSnackComponent } from './ui/big-snack/big-snack.component';
-import { ConfirmSnackComponent } from './ui/confirm-snack/confirm-snack.component';
+import { LoginComponent } from './feature/login/login.component';
+import { RegisterComponent } from './feature/register/register.component';
+import { InvoiceListComponent } from './feature/invoice-list/invoice-list.component';
+import { InvoiceCreateComponent } from './feature/invoice-create/invoice-create.component';
+import { InvoiceViewComponent } from './feature/invoice-view/invoice-view.component';
+import { BigSnackComponent } from './shared/ui/big-snack/big-snack.component';
+import { ConfirmSnackComponent } from './shared/ui/confirm-snack/confirm-snack.component';
+import { NotFoundComponent } from './feature/not-found/not-found.component';
 
-import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { AuthInterceptor } from './shared/interceptors/auth.interceptor';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -25,7 +26,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { HomeComponent } from './components/home/home.component';
+import { HomeComponent } from './feature/home/home.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { HomeComponent } from './components/home/home.component';
     InvoiceViewComponent,
     BigSnackComponent,
     ConfirmSnackComponent,
+    NotFoundComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './shared/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ToastService } from './ui/toast.service';
+import { ToastService } from './shared/ui/toast.service';
 
 @Component({
   selector: 'app-root',

@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { InvoicesModule } from './invoices/invoices.module';
-import { User } from './users/users.model';
-import { Invoice } from './invoices/invoice.model';
-import { LineItem } from './invoices/lineitem.model';
+import { UsersModule } from './feature/users/users.module';
+import { InvoicesModule } from './feature/invoices/invoices.module';
+import { User } from './feature/users/users.model';
+import { Invoice } from './feature/invoices/invoice.model';
+import { LineItem } from './feature/invoices/lineitem.model';
 
 @Module({
   imports: [

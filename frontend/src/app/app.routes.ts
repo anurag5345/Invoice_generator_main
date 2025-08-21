@@ -1,16 +1,18 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { InvoiceListComponent } from './components/invoice-list/invoice-list.component';
-import { InvoiceCreateComponent } from './components/invoice-create/invoice-create.component';
-import { InvoiceViewComponent } from './components/invoice-view/invoice-view.component';
+import { LoginComponent } from './feature/login/login.component';
+import { RegisterComponent } from './feature/register/register.component';
+import { InvoiceListComponent } from './feature/invoice-list/invoice-list.component';
+import { InvoiceCreateComponent } from './feature/invoice-create/invoice-create.component';
+import { InvoiceViewComponent } from './feature/invoice-view/invoice-view.component';
 import { AuthGuard } from './guards/auth.guard';
-import { HomeComponent } from './components/home/home.component';
+import { GuestGuard } from './guards/guest.guard';
+import { HomeComponent } from './feature/home/home.component';
+import { NotFoundComponent } from './feature/not-found/not-found.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [GuestGuard] },
   {
     path: 'invoices',
     component: InvoiceListComponent,
@@ -31,4 +33,5 @@ export const routes: Routes = [
     component: InvoiceCreateComponent,
     canActivate: [AuthGuard],
   },
+  { path: '**', component: NotFoundComponent },
 ];
